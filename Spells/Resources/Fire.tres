@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="Spell" load_steps=2 format=3 uid="uid://ubxradslf7sr"]
+
+[ext_resource type="Script" uid="uid://di00k176fstor" path="res://Spells/Scripts/Spell.gd" id="1_sv5hf"]
+
+[resource]
+script = ExtResource("1_sv5hf")
+name = "Fire"
+metadata/_custom_type_script = "uid://di00k176fstor"

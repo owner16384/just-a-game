@@ -1,0 +1,67 @@
+[gd_scene load_steps=2 format=3 uid="uid://edpgra358vx2"]
+
+[ext_resource type="Script" uid="uid://17c5oxbbw1iu" path="res://Scripts/painting.gd" id="1_aupsh"]
+
+[node name="DrawingMenu" type="Node2D"]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Control" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="Panel" type="Panel" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="Painting" type="Control" parent="CanvasLayer/Control/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_aupsh")
+metadata/_edit_use_anchors_ = true
+
+[node name="Drawing" type="Sprite2D" parent="CanvasLayer/Control/Panel/Painting"]
+position = Vector2(350, 350)
+
+[node name="FinishButton" type="Button" parent="CanvasLayer/Control/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 286.0
+offset_top = 600.0
+offset_right = -866.0
+offset_bottom = -56.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 32
+text = "Finish"
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/Panel"]
+layout_mode = 0
+offset_left = 168.0
+offset_top = 20.0
+offset_right = 532.0
+offset_bottom = 130.0
+theme_override_font_sizes/font_size = 32
+text = "Draw a Fire"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[connection signal="pressed" from="CanvasLayer/Control/Panel/FinishButton" to="CanvasLayer/Control/Panel/Painting" method="_on_finish_button_pressed"]

@@ -1,0 +1,14 @@
+[gd_scene load_steps=4 format=3 uid="uid://c6hakynukrxro"]
+
+[ext_resource type="Script" uid="uid://c0k1par5s8dlg" path="res://Scripts/Components/drawability.gd" id="1_qyhir"]
+[ext_resource type="Shader" uid="uid://dp8lqvcw7ddfr" path="res://Shaders (For Test)/Brush.gdshader" id="2_2bn8y"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_qyhir"]
+shader = ExtResource("2_2bn8y")
+
+[node name="drawability" type="Node2D"]
+script = ExtResource("1_qyhir")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_qyhir")
+position = Vector2(640, 360)

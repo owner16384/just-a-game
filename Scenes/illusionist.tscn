@@ -1,0 +1,27 @@
+[gd_scene load_steps=6 format=3 uid="uid://dkhx7wa5a28o7"]
+
+[ext_resource type="Script" uid="uid://dv2iosl67470g" path="res://Scripts/playerControl.gd" id="1_ouoam"]
+[ext_resource type="PackedScene" uid="uid://bmjcoq1iiec1r" path="res://Scenes/Components/input_movement.tscn" id="2_ouoam"]
+[ext_resource type="PackedScene" uid="uid://c6hakynukrxro" path="res://Scenes/Components/drawability.tscn" id="3_dtxti"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_yp4wr"]
+radius = 0.2
+height = 0.8
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_yp4wr"]
+radius = 0.2
+height = 0.8
+
+[node name="Illusionist" type="CharacterBody3D"]
+collision_layer = 2
+script = ExtResource("1_ouoam")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_yp4wr")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_yp4wr")
+
+[node name="inputMovement" parent="." instance=ExtResource("2_ouoam")]
+
+[node name="drawability" parent="." instance=ExtResource("3_dtxti")]

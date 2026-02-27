@@ -1,0 +1,30 @@
+[gd_scene load_steps=4 format=3 uid="uid://bwsd8at4wvk3c"]
+
+[ext_resource type="PackedScene" uid="uid://dkhx7wa5a28o7" path="res://Scenes/illusionist.tscn" id="1_a02cp"]
+[ext_resource type="PackedScene" uid="uid://can6askbfoecm" path="res://Scenes/ultra_cinematic_camera.tscn" id="2_go701"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_yp4wr"]
+size = Vector3(10, 0.2, 10)
+
+[node name="World" type="Node3D"]
+
+[node name="Ground" type="StaticBody3D" parent="."]
+collision_mask = 3
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_yp4wr")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="Ground"]
+size = Vector3(10, 0.2, 10)
+
+[node name="Illusionist" parent="." instance=ExtResource("1_a02cp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.49999997, 0.75000006, -0.4330127, 0, 0.49999997, 0.86602545, 0.86602545, -0.4330127, 0.24999997, -2.2297091, 1.4563847, 0)
+
+[node name="Ultra Cinematic Camera" parent="." node_paths=PackedStringArray("target") instance=ExtResource("2_go701")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+spring_length = 5.0
+target = NodePath("../Illusionist")
+follow_offset = Vector3(0.5, 0.1, 0)
