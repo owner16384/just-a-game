@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://fyi145r7jw23" path="res://Scripts/Camera.gd" id="1_y4n66"]
 
 [node name="Ultra Cinematic Camera" type="SpringArm3D"]
-spring_length = 10.0
+spring_length = 3.0
 script = ExtResource("1_y4n66")
 
 [node name="Camera3D" type="Camera3D" parent="."]

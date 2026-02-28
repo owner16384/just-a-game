@@ -3,7 +3,7 @@ extends SpringArm3D
 @export var target: CharacterBody3D
 @export var follow_offset: Vector3 = Vector3(3, 2, 0)
 @export var speed: float = 0.3
-@export var mouse_sens: float = 0.02
+@export var mouse_sens: float = 0.01
 
 var yaw: float
 var pitch: float
