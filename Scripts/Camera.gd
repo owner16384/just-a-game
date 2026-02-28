@@ -1,9 +1,9 @@
 extends SpringArm3D
 
 @export var target: CharacterBody3D
-@export var follow_offset: Vector3 = Vector3(3, 2, 0)
+@export var follow_offset: Vector3 = Vector3(5, 3, 0)
 @export var speed: float = 0.3
-@export var mouse_sens: float = 0.01
+@export var mouse_sens: float = 0.005
 
 var yaw: float
 var pitch: float
@@ -25,7 +25,8 @@ func _input(event: InputEvent) -> void:
 		pitch -= relative.y
 		yaw -= relative.x
 		
-		pitch = clampf(pitch, -1, 0.6)
+		yaw = fposmod(yaw, TAU)
+		pitch = clampf(pitch, -1, 0.5)
 		
 		quat = Quaternion.from_euler(Vector3(pitch, yaw, 0))
 		
