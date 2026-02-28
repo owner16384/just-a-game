@@ -176,7 +176,7 @@ func recognize_shape(points: Array[Vector2i]):
 			best_match = template
 	
 	if best_match:
-		print(best_match.get_spell().name)
+		$"../UI -- For Just Test/Last_Spell_Label".text = best_match.get_spell().name
 
 func compare_paths(path1: Array[Vector2i], path2: Array) -> float:
 	var total_distance = 0.0

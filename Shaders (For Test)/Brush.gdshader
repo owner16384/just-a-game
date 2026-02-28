@@ -1,8 +1,8 @@
 shader_type canvas_item;
 
 void vertex() {
-	float x = sin(VERTEX.x * TIME)/1.0;
-	float y = sin(VERTEX.y * TIME)/1.0;
+	float x = sin(VERTEX.x * TIME);
+	float y = sin(VERTEX.y * TIME);
 	
 	VERTEX.x += x;
 	VERTEX.y += y;

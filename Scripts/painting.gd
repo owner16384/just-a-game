@@ -146,8 +146,12 @@ func recognize_and_save_shape(points: Array[Vector2i]):
 func _on_finish_button_pressed() -> void:
 	if last_points.size() < 1: return
 	
-	Templates.add_new_spell(current_draw, last_points)
+	var current_spell_name = Templates.add_new_spell(current_draw, last_points)
+	last_points = []
 	
 	current_draw += 1
 	if Templates.spell_resources.size() <= current_draw:
 		get_tree().change_scene_to_file("res://Scenes/world.tscn")
+		return
+	
+	get_parent().get_node("Label").text = current_spell_name

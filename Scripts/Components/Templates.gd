@@ -24,3 +24,6 @@ func load_all_spells() -> Array[Spell]:
 func add_new_spell(step: int, coords: Array[Vector2i]):
 	var new_spell = SpellManager.new(spell_resources[step], coords)
 	spells.append(new_spell)
+	
+	if spell_resources.size() > step+1:
+		return spell_resources[step+1].name
