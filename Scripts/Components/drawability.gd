@@ -1,8 +1,7 @@
-extends Node2D
-
-@export var timer: float = 2
+extends Node3D
 
 @onready var sprite: Sprite2D = $Sprite2D
+@onready var pen: MeshInstance3D = $Pen
 @onready var brushPath: Texture2D = preload("res://Assets/Brush.png")
 
 var image: Image
@@ -10,9 +9,6 @@ var texture: ImageTexture
 var brushImage: Image
 
 var stroke_points: Array[Vector2i] = []
-var is_drawing: bool = false
-
-var time: float = 0
 
 func _ready() -> void:
 	image = Image.create(1280, 720, false, Image.FORMAT_RGBA8)
@@ -20,43 +16,41 @@ func _ready() -> void:
 	sprite.texture = texture
 	
 	brushImage = brushPath.get_image()
-	
-	time = timer
 
 var last_mouse_pos: Vector2i
 var timer_has_started: bool = false
-func _process(_delta: float) -> void:
-	var mouse_pos = Vector2i(get_viewport().get_mouse_position())
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-		is_drawing = true
+var mouse_pos: Vector2 = Vector2.ZERO
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		mouse_pos += event.relative
 		
-		EventBus.currentState |= EventBus.state.DRAW
+		#region clamp mouse pos
+		var before_clamp: Vector2 = mouse_pos
+		mouse_pos.x = fposmod(mouse_pos.x, 1280)
+		mouse_pos.y = fposmod(mouse_pos.y, 720)
+		#endregion
 		
-		timer_start()
-		time = timer
+		if event.button_mask == MOUSE_BUTTON_LEFT:
+			EventBus.currentState |= EventBus.state.DRAW
+			
+			pen.position = pen.position.lerp(Vector3(mouse_pos.x/750, -mouse_pos.y/750, -0.3) - Vector3(0.3, -0.7, 0.0), 0.1)
+			
+			var interpolation = last_mouse_pos.distance_squared_to(before_clamp)
+			if interpolation > 8:
+				paint_line(last_mouse_pos, before_clamp)
+			else:
+				paint(before_clamp)
+			
+			if stroke_points.is_empty() or stroke_points.back().distance_to(mouse_pos) > 5:
+				stroke_points.append(Vector2i(mouse_pos))
+		elif EventBus.currentState & EventBus.state.DRAW:
+			EventBus.currentState &= ~EventBus.state.DRAW
+			
+			if stroke_points.size() > 10:
+				recognize_shape(stroke_points)
+			stroke_points.clear()
 		
-		if last_mouse_pos.distance_squared_to(mouse_pos) > 8:
-			paint_line(last_mouse_pos, mouse_pos)
-		else:
-			paint(mouse_pos)
-		
-		last_mouse_pos = mouse_pos
-		
-		if stroke_points.is_empty() or stroke_points.back().distance_to(mouse_pos) > 5:
-			stroke_points.append(mouse_pos)
-	elif is_drawing:
-		is_drawing = false
-		
-		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-		
-		EventBus.currentState &= ~EventBus.state.DRAW
-		
-		if stroke_points.size() > 10:
-			recognize_shape(stroke_points)
-		stroke_points.clear()
-	else:
-		last_mouse_pos = get_viewport().get_mouse_position()
+		last_mouse_pos = Vector2((1280 if mouse_pos.x > before_clamp.x else 0) if mouse_pos.x != before_clamp.x else mouse_pos.x, (720 if mouse_pos.y > before_clamp.y else 0) if mouse_pos.y != before_clamp.y else mouse_pos.y)
 
 func paint(where: Vector2i):
 	image.blend_rect(brushImage, brushImage.get_used_rect(), Vector2i(where)-brushImage.get_used_rect().size/2)
@@ -67,20 +61,6 @@ func paint_line(from: Vector2, to: Vector2):
 	while from != to:
 		from = from.move_toward(to, 6)
 		paint(Vector2i(from))
-
-func timer_start():
-	if timer_has_started: return
-	timer_has_started = true
-	
-	while time > 0:
-		time -= 0.1
-		await get_tree().create_timer(0.1).timeout
-	
-	timer_has_started = false
-	time = timer
-	
-	image.fill(Color(0, 0, 0, 0))
-	texture.update(image)
 
 const NUM_POINTS = 64
 const SQUARE_SIZE = 250.0
@@ -177,6 +157,10 @@ func recognize_shape(points: Array[Vector2i]):
 	
 	if best_match:
 		$"../UI -- For Just Test/Last_Spell_Label".text = best_match.get_spell().name
+	
+	stroke_points.clear()
+	image.fill(Color(0, 0, 0, 0))
+	texture.update(image)
 
 func compare_paths(path1: Array[Vector2i], path2: Array) -> float:
 	var total_distance = 0.0
