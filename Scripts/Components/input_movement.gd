@@ -12,6 +12,9 @@ var cam_basis: Basis
 
 func move(delta, player):
 	if !cam_basis: return
+	
+	var on_floor = player.is_on_floor()
+	
 	var input_dir: Vector2 = Input.get_vector("left", "right", "up", "down").normalized()
 	
 	if input_dir:
@@ -28,9 +31,16 @@ func move(delta, player):
 		EventBus.currentState &= ~EventBus.state.WALK
 		EventBus.currentState &= ~EventBus.state.RUN
 	
-	player.velocity.y -= gravity * delta
-	
-	if Input.is_action_just_pressed("jump") and player.is_on_floor():
+	if !on_floor:
+		player.velocity.y -= gravity * delta
+		if player.velocity.y < 0:
+			EventBus.currentState &= ~EventBus.state.JUMP
+			EventBus.currentState |= EventBus.state.FALL
+	elif Input.is_action_just_pressed("jump") and on_floor:
 		player.velocity.y += jump_power
+		EventBus.currentState |= EventBus.state.JUMP
+	else:
+		EventBus.currentState &= ~EventBus.state.JUMP
+		EventBus.currentState &= ~EventBus.state.FALL
 	
 	player.move_and_slide()
