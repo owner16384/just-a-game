@@ -31,7 +31,7 @@ func load_all_spells() -> Array[Spell]:
 			all_spells.append(spell)
 	return all_spells
 
-func add_new_spell(step: int, coords: Array[Vector2i]):
+func add_new_spell(step: int, coords: Array[Vector2]):
 	var new_spell = SpellManager.new(spell_resources[step], coords)
 	spells.append(new_spell)
 	

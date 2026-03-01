@@ -2,7 +2,7 @@ class_name SpellManager
 extends Resource
 
 var spell: Spell
-var coords: Array[Vector2i]
+var coords: Array[Vector2]
 
 var level: int = 1:
 	set(value):
@@ -28,7 +28,7 @@ func check_power():
 	power = spell.default_power + spell.default_power/level
 
 #region --Callable Functions
-func get_coords() -> Array[Vector2i]:
+func get_coords() -> Array[Vector2]:
 	return coords
 func get_spell() -> Spell:
 	return spell
@@ -39,7 +39,7 @@ func get_xp() -> int:
 func get_power() -> float:
 	return power
 
-func set_coords(new: Array[Vector2i]):
+func set_coords(new: Array[Vector2]):
 	coords = new
 func set_xp(new: int):
 	xp = new

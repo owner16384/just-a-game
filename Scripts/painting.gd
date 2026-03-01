@@ -11,7 +11,7 @@ var brushImage: Image
 
 var is_drawing: bool = false
 
-var stroke_points: Array[Vector2i]
+var stroke_points: Array[Vector2]
 
 func _ready() -> void:
 	image = Image.create(400, 400, false, Image.FORMAT_RGBA8)
@@ -21,9 +21,9 @@ func _ready() -> void:
 	
 	brushImage = brushPath.get_image()
 
-var last_mouse_pos: Vector2i
+var last_mouse_pos: Vector2
 func _process(_delta: float) -> void:
-	var mouse_pos = Vector2i(round(get_viewport().get_mouse_position()-drawing.position/2.35))
+	var mouse_pos = Vector2(round(get_viewport().get_mouse_position()-drawing.position/2.35))
 	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		is_drawing = true
 		
@@ -46,7 +46,7 @@ func _process(_delta: float) -> void:
 	else:
 		last_mouse_pos = mouse_pos
 
-func paint(where: Vector2i):
+func paint(where: Vector2):
 	image.blend_rect(brushImage, brushImage.get_used_rect(), Vector2i(where)-brushImage.get_used_rect().size/2)
 	texture.update(image)
 
@@ -54,31 +54,31 @@ func paint_line(from: Vector2, to: Vector2):
 	paint(from)
 	while from != to:
 		from = from.move_toward(to, 6)
-		paint(Vector2i(from))
+		paint(from)
 
 const NUM_POINTS = 64
 const SQUARE_SIZE = 250.0
 
-func process_stroke(points: Array[Vector2i]) -> Array[Vector2i]:
+func process_stroke(points: Array[Vector2]) -> Array[Vector2]:
 	var resampled = resample(points, NUM_POINTS)
 	var translated = translate_to_origin(resampled)
 	var scaled = scale_to_square(translated, SQUARE_SIZE)
 	return scaled
 
-func resample(points: Array[Vector2i], n: int) -> Array[Vector2i]:
+func resample(points: Array[Vector2], n: int) -> Array[Vector2]:
 	if points.size() < 2:
 		return points.duplicate()
 		
 	var interval_length = path_length(points) / (n - 1)
 	
 	if interval_length <= 0.001: 
-		var tiny_arr: Array[Vector2i] = []
+		var tiny_arr: Array[Vector2] = []
 		for j in range(n):
 			tiny_arr.append(points[0])
 		return tiny_arr
 	
 	var D = 0.0
-	var new_points: Array[Vector2i] = [points[0]]
+	var new_points: Array[Vector2] = [points[0]]
 	var i = 1
 	
 	var working_points = points.duplicate()
@@ -89,7 +89,7 @@ func resample(points: Array[Vector2i], n: int) -> Array[Vector2i]:
 			var ratio = (interval_length - D) / d if d > 0 else 0.0
 			var qx = round(working_points[i-1].x + ratio * (working_points[i].x - working_points[i-1].x))
 			var qy = round(working_points[i-1].y + ratio * (working_points[i].y - working_points[i-1].y))
-			var q = Vector2i(qx, qy)
+			var q = Vector2(qx, qy)
 			
 			new_points.append(q)
 			working_points.insert(i, q)
@@ -103,24 +103,24 @@ func resample(points: Array[Vector2i], n: int) -> Array[Vector2i]:
 		
 	return new_points
 
-func path_length(points: Array[Vector2i]) -> float:
+func path_length(points: Array[Vector2]) -> float:
 	var d = 0.0
 	for i in range(1, points.size()):
 		d += points[i-1].distance_to(points[i])
 	return d
 
-func translate_to_origin(points: Array[Vector2i]) -> Array[Vector2i]:
-	var centroid = Vector2i.ZERO
+func translate_to_origin(points: Array[Vector2]) -> Array[Vector2]:
+	var centroid = Vector2.ZERO
 	for p in points:
 		centroid += p
 	centroid /= points.size()
 	
-	var new_points: Array[Vector2i] = []
+	var new_points: Array[Vector2] = []
 	for p in points:
 		new_points.append(p - centroid)
 	return new_points
 
-func scale_to_square(points: Array[Vector2i], _size: float) -> Array[Vector2i]:
+func scale_to_square(points: Array[Vector2], _size: float) -> Array[Vector2]:
 	var min_x = INF; var max_x = -INF
 	var min_y = INF; var max_y = -INF
 	
@@ -131,15 +131,15 @@ func scale_to_square(points: Array[Vector2i], _size: float) -> Array[Vector2i]:
 	var width = max_x - min_x
 	var height = max_y - min_y
 	
-	var new_points: Array[Vector2i] = []
+	var new_points: Array[Vector2] = []
 	for p in points:
 		var qx = p.x * (_size / width) if width != 0 else p.x
 		var qy = p.y * (_size / height) if height != 0 else p.y
-		new_points.append(Vector2i(qx, qy))
+		new_points.append(Vector2(qx, qy))
 	return new_points
 
 var last_points: Array
-func recognize_and_save_shape(points: Array[Vector2i]):
+func recognize_and_save_shape(points: Array[Vector2]):
 	var processed_points = process_stroke(points)
 	last_points = processed_points
 
