@@ -6,5 +6,5 @@ var cam_basis: Basis:
 		cam_basis = value
 		input_Movement.cam_basis = value
 
-func _physics_process(_delta: float) -> void:
-	input_Movement.move(self)
+func _physics_process(delta: float) -> void:
+	input_Movement.move(delta, self)
