@@ -1,60 +1,55 @@
 extends Control
 
-var current_draw: int = 0
-
-@onready var drawing: Sprite2D = $Drawing
-@onready var brushPath = preload("res://Assets/Brush.png")
-
-var image: Image
-var texture: ImageTexture
-var brushImage: Image
-
-var is_drawing: bool = false
+@onready var drawing: Line2D = $Drawing
 
 var stroke_points: Array[Vector2]
-
-func _ready() -> void:
-	image = Image.create(400, 400, false, Image.FORMAT_RGBA8)
-	image.fill(Color.WHITE)
-	texture = ImageTexture.create_from_image(image)
-	drawing.texture = texture
-	
-	brushImage = brushPath.get_image()
-
 var last_mouse_pos: Vector2
+var current_draw: int = 0
+
 func _process(_delta: float) -> void:
-	var mouse_pos = Vector2(round(get_viewport().get_mouse_position()-drawing.position/2.35))
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-		is_drawing = true
-		
-		if last_mouse_pos.distance_squared_to(mouse_pos) > 8:
-			paint_line(last_mouse_pos, mouse_pos)
+	var mouse_pos = Vector2(get_viewport().get_mouse_position()-drawing.position/2.35)
+	if is_on_drawing(Vector2(350, 350), Vector2(400, 400), mouse_pos):
+		var is_drawing = EventBus.currentState & EventBus.state.DRAW
+		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+			if !is_drawing:
+				EventBus.currentState |= EventBus.state.DRAW
+				stroke_points.clear()
+				drawing.clear_points()
+			
+			if last_mouse_pos.distance_squared_to(mouse_pos) > 8:
+				add_line(last_mouse_pos, mouse_pos)
+			else:
+				add_point(mouse_pos)
+			
+			last_mouse_pos = mouse_pos
+			
+			if stroke_points.is_empty() or stroke_points.back().distance_to(mouse_pos) > 4:
+				stroke_points.append(mouse_pos)
+		elif is_drawing:
+			EventBus.currentState &= ~EventBus.state.DRAW
+			
+			if stroke_points.size() > 10:
+				stroke_points = process_stroke(stroke_points)
 		else:
-			paint(mouse_pos)
-		
-		last_mouse_pos = mouse_pos
-		
-		if stroke_points.is_empty() or stroke_points.back().distance_to(mouse_pos) > 5:
-			stroke_points.append(mouse_pos)
-	elif is_drawing:
-		is_drawing = false
-		
-		if stroke_points.size() > 10:
-			recognize_and_save_shape(stroke_points)
-		stroke_points.clear()
-		image.fill(Color.WHITE)
-	else:
-		last_mouse_pos = mouse_pos
+			last_mouse_pos = mouse_pos
 
-func paint(where: Vector2):
-	image.blend_rect(brushImage, brushImage.get_used_rect(), Vector2i(where)-brushImage.get_used_rect().size/2)
-	texture.update(image)
+func is_on_drawing(drawing_pos: Vector2, drawing_size: Vector2, mouse_pos: Vector2) -> bool:
+	var left_up_pos = drawing_pos - drawing_size/2
+	var right_down_pos = drawing_pos + drawing_size/2
+	
+	var inleftup = true if mouse_pos.x > left_up_pos.x and mouse_pos.y > left_up_pos.y else false
+	var inrightdown = true if mouse_pos.x < right_down_pos.x and mouse_pos.y < right_down_pos.y else false
+	
+	return true if inleftup and inrightdown else false
 
-func paint_line(from: Vector2, to: Vector2):
-	paint(from)
+func add_point(where: Vector2):
+	drawing.add_point(where)
+
+func add_line(from: Vector2, to: Vector2):
+	add_point(from)
 	while from != to:
 		from = from.move_toward(to, 6)
-		paint(from)
+		add_point(from)
 
 const NUM_POINTS = 64
 const SQUARE_SIZE = 250.0
@@ -68,7 +63,7 @@ func process_stroke(points: Array[Vector2]) -> Array[Vector2]:
 func resample(points: Array[Vector2], n: int) -> Array[Vector2]:
 	if points.size() < 2:
 		return points.duplicate()
-		
+	
 	var interval_length = path_length(points) / (n - 1)
 	
 	if interval_length <= 0.001: 
@@ -100,7 +95,6 @@ func resample(points: Array[Vector2], n: int) -> Array[Vector2]:
 			i += 1
 	while new_points.size() < n:
 		new_points.append(working_points.back())
-		
 	return new_points
 
 func path_length(points: Array[Vector2]) -> float:
@@ -138,19 +132,15 @@ func scale_to_square(points: Array[Vector2], _size: float) -> Array[Vector2]:
 		new_points.append(Vector2(qx, qy))
 	return new_points
 
-var last_points: Array
-func recognize_and_save_shape(points: Array[Vector2]):
-	var processed_points = process_stroke(points)
-	last_points = processed_points
-
 func _on_finish_button_pressed() -> void:
-	if last_points.size() < 1: return
+	if stroke_points.size() <= 10: return
 	
-	var current_spell_name = Templates.add_new_spell(current_draw, last_points)
-	last_points = []
+	var current_spell_name = Templates.add_new_spell(current_draw, stroke_points.duplicate())
+	stroke_points.clear()
+	drawing.clear_points()
 	
 	current_draw += 1
-	if Templates.spell_resources.size() <= current_draw:
+	if !current_spell_name:
 		get_tree().change_scene_to_file("res://Scenes/world.tscn")
 		return
 	

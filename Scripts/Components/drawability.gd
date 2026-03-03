@@ -1,3 +1,4 @@
+class_name drawability
 extends Node3D
 
 @onready var drawing: Line2D = $Drawing
@@ -7,48 +8,43 @@ var stroke_points: Array[Vector2] = []
 
 var last_mouse_pos: Vector2
 var timer_has_started: bool = false
-var mouse_pos: Vector2 = Vector2.ZERO
+var mouse_pos: Vector2 = Vector2(640, 360)
 
-func _input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion:
-		mouse_pos += event.relative
+func paint(event):
+	mouse_pos += event.relative
+	mouse_pos = mouse_pos.clamp(Vector2(0, 0), Vector2(1280, 720))
+	
+	if event.button_mask == MOUSE_BUTTON_LEFT:
+		EventBus.currentState |= EventBus.state.DRAW
 		
-		#region clamp mouse pos
-		var before_clamp: Vector2 = mouse_pos
-		mouse_pos.x = fposmod(mouse_pos.x, 1280)
-		mouse_pos.y = fposmod(mouse_pos.y, 720)
-		#endregion
+		pen.position = pen.position.lerp(Vector3(mouse_pos.x/1000, -mouse_pos.y/1000, -0.3) - Vector3(0.3, -0.7, 0.0), 0.1)
 		
-		if event.button_mask == MOUSE_BUTTON_LEFT:
-			EventBus.currentState |= EventBus.state.DRAW
-			
-			pen.position = pen.position.lerp(Vector3(mouse_pos.x/750, -mouse_pos.y/750, -0.3) - Vector3(0.3, -0.7, 0.0), 0.1)
-			
-			var interpolation = last_mouse_pos.distance_squared_to(before_clamp)
-			if interpolation > 8:
-				paint_line(last_mouse_pos, before_clamp)
-			else:
-				paint(before_clamp)
-			
-			if stroke_points.is_empty() or stroke_points.back().distance_to(mouse_pos) > 5:
-				stroke_points.append(Vector2(mouse_pos))
-		elif EventBus.currentState & EventBus.state.DRAW:
-			EventBus.currentState &= ~EventBus.state.DRAW
-			
-			if stroke_points.size() > 10:
-				recognize_shape(stroke_points)
-			stroke_points.clear()
+		var interpolation = last_mouse_pos.distance_squared_to(mouse_pos)
+		if interpolation > 8:
+			add_line(last_mouse_pos, mouse_pos)
+		else:
+			add_point(mouse_pos)
 		
-		last_mouse_pos = Vector2((1280 if mouse_pos.x > before_clamp.x else 0) if mouse_pos.x != before_clamp.x else mouse_pos.x, (720 if mouse_pos.y > before_clamp.y else 0) if mouse_pos.y != before_clamp.y else mouse_pos.y)
+		if stroke_points.is_empty() or stroke_points.back().distance_to(mouse_pos) > 5:
+			stroke_points.append(mouse_pos)
+	elif EventBus.currentState & EventBus.state.DRAW:
+		EventBus.currentState &= ~EventBus.state.DRAW
+		
+		if stroke_points.size() > 10:
+			recognize_shape(stroke_points)
+		stroke_points.clear()
+		drawing.clear_points()
+	
+	last_mouse_pos = mouse_pos
 
-func paint(where: Vector2):
+func add_point(where: Vector2):
 	drawing.add_point(where)
 
-func paint_line(from: Vector2, to: Vector2):
-	paint(from)
+func add_line(from: Vector2, to: Vector2):
+	add_point(from)
 	while from != to:
 		from = from.move_toward(to, 6)
-		paint(from)
+		add_point(from)
 
 const NUM_POINTS = 64
 const SQUARE_SIZE = 250.0
@@ -65,7 +61,7 @@ func resample(points: Array[Vector2], n: int) -> Array[Vector2]:
 		
 	var interval_length = path_length(points) / (n - 1)
 	
-	if interval_length <= 0.001: 
+	if interval_length <= 0.001:
 		var tiny_arr: Array[Vector2] = []
 		for j in range(n):
 			tiny_arr.append(points[0])
@@ -138,7 +134,8 @@ func recognize_shape(points: Array[Vector2]):
 	var best_score = INF
 	
 	for template in Templates.spells:
-		var score = compare_paths(processed_points, template.coords)
+		var score = compare_paths(processed_points, template.get_coords())
+		
 		if score < best_score:
 			best_score = score
 			best_match = template
@@ -149,7 +146,7 @@ func recognize_shape(points: Array[Vector2]):
 	stroke_points.clear()
 	drawing.clear_points()
 
-func compare_paths(path1: Array[Vector2], path2: Array) -> float:
+func compare_paths(path1: Array[Vector2], path2: Array[Vector2]) -> float:
 	var total_distance = 0.0
 	for i in range(min(path1.size(), path2.size())):
 		total_distance += path1[i].distance_to(path2[i])

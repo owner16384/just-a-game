@@ -34,8 +34,7 @@ grow_vertical = 2
 script = ExtResource("1_aupsh")
 metadata/_edit_use_anchors_ = true
 
-[node name="Drawing" type="Sprite2D" parent="CanvasLayer/Control/Panel/Painting"]
-position = Vector2(350, 350)
+[node name="Drawing" type="Line2D" parent="CanvasLayer/Control/Panel/Painting"]
 
 [node name="FinishButton" type="Button" parent="CanvasLayer/Control/Panel"]
 layout_mode = 1

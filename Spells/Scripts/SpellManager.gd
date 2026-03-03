@@ -1,7 +1,10 @@
 class_name SpellManager
 extends Resource
 
-var spell: Spell
+var spell: Spell:
+	set(value):
+		spell = value
+		check_power()
 var coords: Array[Vector2]
 
 var level: int = 1:
@@ -15,11 +18,9 @@ var xp: int = 0:
 
 var power: float
 
-func _init(newspell, newcoords) -> void:
+func _init(newspell: Spell, newcoords: Array[Vector2]) -> void:
 	spell = newspell
 	coords = newcoords
-	
-	power = spell.default_power
 
 func check_level():
 	var needed_xp: float = (level-1)*50 + level*50

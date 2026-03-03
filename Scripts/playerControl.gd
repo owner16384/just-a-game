@@ -1,6 +1,8 @@
 extends CharacterBody3D
 
 @onready var input_Movement: inputMovement = $inputMovement
+@onready var paint_component: drawability = $drawability
+
 var cam_basis: Basis:
 	set(value):
 		cam_basis = value
@@ -8,3 +10,7 @@ var cam_basis: Basis:
 
 func _physics_process(delta: float) -> void:
 	input_Movement.move(delta, self)
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		paint_component.paint(event)
