@@ -21,10 +21,11 @@ func attach_immediate_mesh(mesh):
 	immediate_mesh = mesh
 
 func _process(delta: float) -> void:
-	var target_pos = Vector3(mouse_pos.x/1000, -mouse_pos.y/1000, 0) - Vector3(0.3, -0.7, 0.0) if left_clicked else Vector3(0, 0, 0)
+	var target_pos = Vector3(mouse_pos.x/800, -mouse_pos.y/800, 0) - Vector3(0.4, -0.9, 0.0)
 	pen.position = pen.position.lerp(target_pos, pen_sensitivity * delta)
 	
 	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 		left_clicked()
 	elif EventBus.currentState & EventBus.state.DRAW:
 		mouse_pos = Vector2(640, 360)
@@ -32,8 +33,7 @@ func _process(delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and EventBus.currentState & EventBus.state.DRAW:
-		mouse_pos += event.relative * mouse_sensitivity
-		mouse_pos = mouse_pos.clamp(Vector2(0, 0), Vector2(1280, 720))
+		mouse_pos = event.position
 		
 		last_mouse_pos = mouse_pos
 
