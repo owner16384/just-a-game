@@ -1,6 +1,9 @@
 class_name drawability
 extends Node3D
 
+@export var mouse_sensitivity: float = 2
+@export var pen_sensitivity: float = 5
+
 @onready var drawing: Line2D = $Drawing
 @onready var pen: Node3D = $Pen
 
@@ -17,34 +20,42 @@ func _ready() -> void:
 func attach_immediate_mesh(mesh):
 	immediate_mesh = mesh
 
-func paint(event):
-	mouse_pos += event.relative * 2
-	mouse_pos = mouse_pos.clamp(Vector2(0, 0), Vector2(1280, 720))
+func _process(delta: float) -> void:
+	var target_pos = Vector3(mouse_pos.x/1000, -mouse_pos.y/1000, 0) - Vector3(0.3, -0.7, 0.0) if left_clicked else Vector3(0, 0, 0)
+	pen.position = pen.position.lerp(target_pos, pen_sensitivity * delta)
 	
-	if event.button_mask == MOUSE_BUTTON_LEFT:
-		EventBus.currentState |= EventBus.state.DRAW
-		
-		pen.position = pen.position.lerp(Vector3(mouse_pos.x/1000, -mouse_pos.y/1000, 0) - Vector3(0.3, -0.7, 0.0), 0.1)
-		
-		if stroke_points.is_empty() or stroke_points.back().distance_to(mouse_pos) > 5:
-			stroke_points.append(mouse_pos)
-			
-			stroke_points_3d.append(pen.global_position+-pen.basis.z*0.2)
-			add_point()
+	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		left_clicked()
 	elif EventBus.currentState & EventBus.state.DRAW:
-		EventBus.currentState &= ~EventBus.state.DRAW
+		mouse_pos = Vector2(640, 360)
+		left_released()
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion and EventBus.currentState & EventBus.state.DRAW:
+		mouse_pos += event.relative * mouse_sensitivity
+		mouse_pos = mouse_pos.clamp(Vector2(0, 0), Vector2(1280, 720))
 		
-		if stroke_points.size() > 10:
-			recognize_shape(stroke_points)
-		stroke_points.clear()
-		drawing.clear_points()
-		
-		stroke_points_3d.clear()
-		immediate_mesh.clear_surfaces()
-	else:
-		pen.position = pen.position.lerp(Vector3(0, 0, 0), 0.1)
+		last_mouse_pos = mouse_pos
+
+func left_clicked():
+	EventBus.currentState |= EventBus.state.DRAW
 	
-	last_mouse_pos = mouse_pos
+	if stroke_points.is_empty() or stroke_points.back().distance_to(mouse_pos) > 5:
+		stroke_points.append(mouse_pos)
+		
+		stroke_points_3d.append(pen.global_position-pen.global_basis.z*0.4)
+		add_point()
+
+func left_released():
+	EventBus.currentState &= ~EventBus.state.DRAW
+	
+	if stroke_points.size() > 10:
+		recognize_shape(stroke_points)
+	stroke_points.clear()
+	drawing.clear_points()
+	
+	stroke_points_3d.clear()
+	immediate_mesh.clear_surfaces()
 
 func add_point():
 	immediate_mesh.clear_surfaces()
