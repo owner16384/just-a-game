@@ -1,12 +1,12 @@
-[gd_scene load_steps=2 format=3 uid="uid://edpgra358vx2"]
+[gd_scene format=3 uid="uid://edpgra358vx2"]
 
 [ext_resource type="Script" uid="uid://17c5oxbbw1iu" path="res://Scripts/painting.gd" id="1_aupsh"]
 
-[node name="DrawingMenu" type="Node2D"]
+[node name="DrawingMenu" type="Node2D" unique_id=689346582]
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1476944037]
 
-[node name="Control" type="Control" parent="CanvasLayer"]
+[node name="Control" type="Control" parent="CanvasLayer" unique_id=599022154]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -15,7 +15,7 @@ grow_horizontal = 2
 grow_vertical = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="Panel" type="Panel" parent="CanvasLayer/Control"]
+[node name="Panel" type="Panel" parent="CanvasLayer/Control" unique_id=1079577795]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -24,7 +24,7 @@ grow_horizontal = 2
 grow_vertical = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="Painting" type="Control" parent="CanvasLayer/Control/Panel"]
+[node name="Painting" type="Control" parent="CanvasLayer/Control/Panel" unique_id=2138606957]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -34,9 +34,9 @@ grow_vertical = 2
 script = ExtResource("1_aupsh")
 metadata/_edit_use_anchors_ = true
 
-[node name="Drawing" type="Line2D" parent="CanvasLayer/Control/Panel/Painting"]
+[node name="Drawing" type="Line2D" parent="CanvasLayer/Control/Panel/Painting" unique_id=1982190923]
 
-[node name="FinishButton" type="Button" parent="CanvasLayer/Control/Panel"]
+[node name="FinishButton" type="Button" parent="CanvasLayer/Control/Panel" unique_id=1284855169]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -51,7 +51,7 @@ theme_override_font_sizes/font_size = 32
 text = "Finish"
 metadata/_edit_use_anchors_ = true
 
-[node name="Label" type="Label" parent="CanvasLayer/Control/Panel"]
+[node name="Label" type="Label" parent="CanvasLayer/Control/Panel" unique_id=660083851]
 layout_mode = 0
 offset_left = 168.0
 offset_top = 20.0

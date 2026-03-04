@@ -10,4 +10,4 @@ enum state {
 }
 var currentState: int = state.NONE
 
-signal get_mesh(function: Callable)
+signal get_drawability_nodes(function: Callable)

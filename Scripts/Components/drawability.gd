@@ -4,41 +4,43 @@ extends Node3D
 @export var mouse_sensitivity: float = 2
 @export var pen_sensitivity: float = 5
 
-@onready var drawing: Line2D = $Drawing
 @onready var pen: Node3D = $Pen
 
 var stroke_points: Array[Vector2] = []
 var stroke_points_3d: Array[Vector3] = []
-var last_mouse_pos: Vector2 = Vector2(640, 360)
-var mouse_pos: Vector2 = Vector2(640, 360)
+
 var immediate_mesh: ImmediateMesh
+var camera: Camera3D
+
+var mouse_pos: Vector2 = Vector2.ZERO
+var world_mouse_pos: Vector3 = Vector3.ZERO
 
 func _ready() -> void:
 	await get_tree().create_timer(0.01).timeout
-	EventBus.emit_signal("get_mesh", attach_immediate_mesh as Callable)
+	EventBus.emit_signal("get_drawability_nodes", attach_nodes as Callable)
 
-func attach_immediate_mesh(mesh):
+func attach_nodes(mesh, cam):
 	immediate_mesh = mesh
+	camera = cam
 
 func _process(delta: float) -> void:
-	var target_pos = Vector3(mouse_pos.x/800, -mouse_pos.y/800, 0) - Vector3(0.4, -0.9, 0.0)
-	pen.position = pen.position.lerp(target_pos, pen_sensitivity * delta)
-	
 	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 		left_clicked()
 	elif EventBus.currentState & EventBus.state.DRAW:
-		mouse_pos = Vector2(640, 360)
 		left_released()
-
-func _input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion and EventBus.currentState & EventBus.state.DRAW:
-		mouse_pos = event.position
-		
-		last_mouse_pos = mouse_pos
+	
+	pen.position = pen.position.lerp(world_mouse_pos, pen_sensitivity * delta)
 
 func left_clicked():
 	EventBus.currentState |= EventBus.state.DRAW
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	
+	mouse_pos = get_viewport().get_mouse_position() - Vector2(640, 360)
+	mouse_pos.x = clampf(mouse_pos.x, -240, 100)
+	mouse_pos.y = clampf(mouse_pos.y, -240, 100)
+	var distance = 1
+	
+	world_mouse_pos = Vector3(mouse_pos.x-10,-mouse_pos.y-10,0)*0.008 - camera.global_basis.z*distance + camera.global_basis.x*distance
 	
 	if stroke_points.is_empty() or stroke_points.back().distance_to(mouse_pos) > 5:
 		stroke_points.append(mouse_pos)
@@ -48,11 +50,11 @@ func left_clicked():
 
 func left_released():
 	EventBus.currentState &= ~EventBus.state.DRAW
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
 	if stroke_points.size() > 10:
 		recognize_shape(stroke_points)
 	stroke_points.clear()
-	drawing.clear_points()
 	
 	stroke_points_3d.clear()
 	immediate_mesh.clear_surfaces()
@@ -164,7 +166,6 @@ func recognize_shape(points: Array[Vector2]):
 		$"../UI -- For Just Test/Last_Spell_Label".text = best_match.get_spell().name
 	
 	stroke_points.clear()
-	drawing.clear_points()
 
 func compare_paths(path1: Array[Vector2], path2: Array[Vector2]) -> float:
 	var total_distance = 0.0

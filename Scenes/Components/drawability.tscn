@@ -1,21 +1,15 @@
-[gd_scene load_steps=3 format=3 uid="uid://c6hakynukrxro"]
+[gd_scene format=3 uid="uid://c6hakynukrxro"]
 
 [ext_resource type="Script" uid="uid://c0k1par5s8dlg" path="res://Scripts/Components/drawability.gd" id="1_qyhir"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_2bn8y"]
 
-[node name="drawability" type="Node3D"]
+[node name="drawability" type="Node3D" unique_id=2036982616]
 script = ExtResource("1_qyhir")
 
-[node name="Pen" type="Node3D" parent="."]
+[node name="Pen" type="Node3D" parent="." unique_id=773732189]
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Pen"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Pen" unique_id=925805372]
 transform = Transform3D(0.1, 0, 0, 0, -4.371139e-09, -0.1, 0, 0.1, -4.371139e-09, 0, 0, -0.3)
 mesh = SubResource("CylinderMesh_2bn8y")
 skeleton = NodePath("../..")
-
-[node name="Drawing" type="Line2D" parent="."]
-default_color = Color(1, 0, 1, 1)
-joint_mode = 2
-begin_cap_mode = 2
-end_cap_mode = 2
