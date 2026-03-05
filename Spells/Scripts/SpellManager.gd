@@ -22,10 +22,10 @@ func _init(newspell: Spell, newcoords: Array[Vector2]) -> void:
 	spell = newspell
 	coords = newcoords
 
-func check_level():
-	var needed_xp: float = (level-1)*50 + level*50
+func check_level(): # calculates level for the xp
+	var needed_xp: float = ((level-1) + level)*50
 	level = int(float(xp)/needed_xp)
-func check_power():
+func check_power(): # calculates power for the level
 	power = spell.default_power + spell.default_power/level
 
 #region --Callable Functions

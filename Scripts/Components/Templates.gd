@@ -9,6 +9,8 @@ func _ready() -> void:
 	spell_resources = load_all_spells()
 
 func load_all_spells() -> Array[Spell]:
+	# get every resources from the path and append them to the spell_resources list
+	
 	var dir = DirAccess.open(spells_path)
 	var all_spells_for_levels: Dictionary[int, Array] = {}
 	
