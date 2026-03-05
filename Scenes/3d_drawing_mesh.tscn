@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://ds50dw1uj5a0f"]
+
+[ext_resource type="Material" uid="uid://dxd2atu3vx6x2" path="res://Assets/Materials/paint_mat.tres" id="1_uvbcw"]
+
+[sub_resource type="ImmediateMesh" id="ImmediateMesh_5a7ea"]
+
+[node name="3D Drawing Mesh" type="MeshInstance3D" unique_id=542878851]
+material_override = ExtResource("1_uvbcw")
+mesh = SubResource("ImmediateMesh_5a7ea")

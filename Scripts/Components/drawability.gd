@@ -3,25 +3,29 @@ extends Node3D
 
 @export var mouse_sensitivity: float = 2
 @export var pen_sensitivity: float = 5
+@export var max_pen_distance: float = 500
+@export var pen_offset: Vector3 = Vector3(0.5, 0.5, -1)
 
-@onready var pen: Node3D = $Pen
+@onready var pen: MeshInstance3D = $Pen
 
 var stroke_points: Array[Vector2] = []
 var stroke_points_3d: Array[Vector3] = []
 
-var immediate_mesh: ImmediateMesh
-var camera: Camera3D
+var current_mesh: MeshInstance3D
+var deleting_meshes: Array[MeshInstance3D]
 
 var mouse_pos: Vector2 = Vector2.ZERO
-var world_mouse_pos: Vector3 = Vector3.ZERO
+var mouse_pos_3d: Vector3 = Vector3.ZERO
 
 func _ready() -> void:
-	await get_tree().create_timer(0.01).timeout
-	EventBus.emit_signal("get_drawability_nodes", attach_nodes as Callable)
+	await get_tree().create_timer(0).timeout
+	create_new_mesh()
 
-func attach_nodes(mesh, cam):
-	immediate_mesh = mesh
-	camera = cam
+func create_new_mesh():
+	EventBus.emit_signal("create_new_mesh", get_mesh as Callable)
+
+func get_mesh(new_mesh):
+	current_mesh = new_mesh
 
 func _process(delta: float) -> void:
 	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
@@ -29,44 +33,64 @@ func _process(delta: float) -> void:
 	elif EventBus.currentState & EventBus.state.DRAW:
 		left_released()
 	
-	pen.position = pen.position.lerp(world_mouse_pos, pen_sensitivity * delta)
+	pen.position = pen.position.lerp(mouse_pos_3d, pen_sensitivity * delta)
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		mouse_pos += event.relative * mouse_sensitivity
+		if mouse_pos.length() > max_pen_distance:
+			mouse_pos = mouse_pos.normalized() * max_pen_distance
+		
+		mouse_pos_3d = Vector3(mouse_pos.x, -mouse_pos.y, 0)/800 + pen_offset
 
 func left_clicked():
 	EventBus.currentState |= EventBus.state.DRAW
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-	
-	mouse_pos = get_viewport().get_mouse_position() - Vector2(640, 360)
-	mouse_pos.x = clampf(mouse_pos.x, -240, 100)
-	mouse_pos.y = clampf(mouse_pos.y, -240, 100)
-	var distance = 1
-	
-	world_mouse_pos = Vector3(mouse_pos.x-10,-mouse_pos.y-10,0)*0.008 - camera.global_basis.z*distance + camera.global_basis.x*distance
 	
 	if stroke_points.is_empty() or stroke_points.back().distance_to(mouse_pos) > 5:
 		stroke_points.append(mouse_pos)
-		
-		stroke_points_3d.append(pen.global_position-pen.global_basis.z*0.4)
-		add_point()
+	
+	stroke_points_3d.append(pen.global_position-pen.global_basis.z*0.4)
+	if current_mesh:
+		redraw_mesh(current_mesh.mesh, stroke_points_3d.duplicate())
 
 func left_released():
 	EventBus.currentState &= ~EventBus.state.DRAW
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
 	if stroke_points.size() > 10:
 		recognize_shape(stroke_points)
 	stroke_points.clear()
 	
+	delete_mesh(current_mesh, stroke_points_3d.duplicate())
+	current_mesh = null
+	create_new_mesh()
 	stroke_points_3d.clear()
-	immediate_mesh.clear_surfaces()
 
-func add_point():
-	immediate_mesh.clear_surfaces()
-	if stroke_points_3d.size() < 2: return
+func delete_mesh(meshins, points):
+	if deleting_meshes.has(meshins): return # checks if it isn't deleting currently
+	deleting_meshes.append(meshins)
 	
-	immediate_mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
-	for i in stroke_points_3d:
-		immediate_mesh.surface_add_vertex(i)
-	immediate_mesh.surface_end()
+	var mesh: ImmediateMesh = meshins.mesh
+	
+	# this gives a simple tail animation
+	for i in points.size():
+		points.pop_front()
+		
+		redraw_mesh(mesh, points.duplicate())
+		
+		await get_tree().create_timer(0.0).timeout
+	
+	deleting_meshes.erase(meshins) # delete from list (if this is not, it keeps be in list like "<Freed Object>")
+	meshins.queue_free() # delete from scene simply
+
+func redraw_mesh(mesh, points):
+	
+	mesh.clear_surfaces()
+	if points.size() < 1: return
+	
+	mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
+	for i in points:
+		mesh.surface_add_vertex(i)
+	mesh.surface_end()
 
 const NUM_POINTS = 64
 const SQUARE_SIZE = 250.0
