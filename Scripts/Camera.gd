@@ -1,5 +1,6 @@
 extends SpringArm3D
 
+# Custom detailed camera settings
 @export var target: CharacterBody3D
 @export var follow_offset: Vector3 = Vector3(0.8, 0.3, 0)
 @export var follow_sensitivity: float = 50
@@ -11,23 +12,26 @@ var yaw: float
 var pitch: float
 var quat: Quaternion
 
+# clamp values
 var min_yaw: float
 var max_yaw: float
 
 func _ready() -> void:
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED) # Hide Mouse
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED) # Hide the Mouse
 
 func _physics_process(delta: float) -> void:
+	# get the position of the target with offset
 	var target_pos = target.position+follow_offset.x*basis.x+follow_offset.y*basis.y+basis.z*follow_offset.z
 	position = position.lerp(target_pos, follow_sensitivity * delta)
 	
+	# rotate the camera with using quaternion slerp
 	var nextposquat = quaternion.slerp(quat, rotate_sensitivity * delta)
 	basis = Basis(nextposquat.normalized())
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		var is_drawing = EventBus.currentState & EventBus.state.DRAW
-		var draw_smoothness = abs(is_drawing-1)+is_drawing*sens_multipler_when_draw # it equals that: sens_multipler_when_draw if drawing else: 1
+		var draw_smoothness = abs(is_drawing-1)+is_drawing*sens_multipler_when_draw # it equals that: sens_multipler_when_draw if drawing else: 1 
 		var relative = event.relative*mouse_sensitivity*draw_smoothness
 		
 		pitch -= relative.y
@@ -45,5 +49,6 @@ func _input(event: InputEvent) -> void:
 			yaw = fposmod(yaw, TAU) # TAU == 2 * PI
 		pitch = clampf(pitch, -1, 0.5)
 		
+		# uses quaternion, no gimball lock problem
 		quat = Quaternion.from_euler(Vector3(pitch, yaw, 0))
 		target.cam_basis = basis
