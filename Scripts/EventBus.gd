@@ -1,5 +1,6 @@
 extends Node
 
+# Simple State Flags With Bitwise System
 enum state {
 	NONE = 0,
 	DRAW = 1 << 0,

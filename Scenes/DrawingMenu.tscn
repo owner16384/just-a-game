@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://edpgra358vx2"]
 
 [ext_resource type="Script" uid="uid://17c5oxbbw1iu" path="res://Scripts/painting.gd" id="1_aupsh"]
+[ext_resource type="PackedScene" uid="uid://df7na7cdtppsq" path="res://Scenes/Components/calculate_shape.tscn" id="2_1xosp"]
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_aupsh"]
 
@@ -47,6 +48,8 @@ texture = SubResource("CanvasTexture_aupsh")
 
 [node name="Drawing" type="Line2D" parent="CanvasLayer/Control/Panel/Painting" unique_id=1982190923]
 default_color = Color(0.48677072, 0.9063318, 1, 1)
+
+[node name="calculate_shape" parent="CanvasLayer/Control/Panel/Painting" unique_id=667972604 instance=ExtResource("2_1xosp")]
 
 [node name="FinishButton" type="Button" parent="CanvasLayer/Control/Panel" unique_id=1284855169]
 layout_mode = 1

@@ -1,7 +1,6 @@
 extends CharacterBody3D
 
 @onready var input_Movement: inputMovement = $inputMovement
-@onready var paint_component: drawability = $drawability
 
 var cam_basis: Basis:
 	set(value):

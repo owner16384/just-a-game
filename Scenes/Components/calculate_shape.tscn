@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://df7na7cdtppsq"]
+
+[ext_resource type="Script" uid="uid://xcqr1aoial78" path="res://Scenes/Shape Calculate.gd" id="1_asxmi"]
+
+[node name="calculate_shape" type="Node" unique_id=667972604]
+script = ExtResource("1_asxmi")
